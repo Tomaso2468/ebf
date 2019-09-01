@@ -1,0 +1,136 @@
+ebf {
+	final {
+		info {
+			authorName = Tomas O'Shea
+		}
+		
+		vars {
+			botName = ExampleBot
+		}
+		
+		onload {
+			ebs {
+				out Hello World!
+			}
+		}
+	}
+	
+	text {
+		lang:en {
+			io {
+				in {
+					Do you like tea?
+				}
+				out {
+					No.
+					No, I do not.
+					No, I don't.
+				}
+			}
+		
+			region:gb {
+				io {
+					in {
+						Do you like tea?
+					}
+					out {
+						Yes.
+						Yes!
+						Yes, I do.
+						Yes, I do!
+					}
+				}
+			}
+			
+			io {
+				in {
+					Who are you?
+					What is your name?
+					What's your name?
+				}
+				
+				out {
+					My name is %botName%.
+					I am %botName%.
+					I'm %botName%.
+					My name is %botName%!
+					I am %botName%!
+					I'm %botName%!
+				}
+				
+				out2 {
+					My name is %botName%.
+					I am %botName%.
+					I'm %botName%.
+				}
+				
+				out3 {
+					...
+					Why do you keep asking this?
+				}
+			}
+			
+			io {
+				in {
+					Hello!
+					Hello.
+					Hi.
+					Hi there.
+				}
+				
+				out {
+					Hello.
+					Hi.
+					Hello!
+					Hi!
+				}
+				
+				out2 {
+					Hello, again.
+					Hi, again.
+				}
+				
+				out3 {
+					...
+					Why do you keep asking this?
+				}
+			}
+			
+			io {
+				in {
+					Hello There.
+				}
+				
+				out {
+					General Reposti.
+					General Kenobi.
+					General Kenobi.
+				}
+			}
+			
+			io {
+				in {
+					What are you?
+					What type of thing are you?
+				}
+				out {
+					I am an example chatbot.
+					I am a chatbot.
+					I am a very basic AI.
+					I am an AI.
+				}
+			}
+			
+			io {
+				in {
+					What context are we in?
+					!context
+				}
+				
+				out {
+					We are in "%context%".
+				}
+			}
+		}
+	}
+}

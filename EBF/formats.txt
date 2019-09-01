@@ -1,0 +1,4 @@
+ebf -> bot definitions
+ebi -> bot data
+ebn -> bot neural network
+ebs -> bot scripts

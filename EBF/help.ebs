@@ -1,0 +1,31 @@
+out --Output--
+out out - prints text
+out log - logs text
+out ln - outputs an empty line
+ln
+out --Loops, Functions and Conditionals--
+out if - checks state of a variable.
+out def - starts a function declaration.
+out repeat - repeats n times.
+out while - repeat while a condition is true.
+out call - calls a function.
+out native - calls a native function.
+out return - returns from a function.
+ln
+out --Maths--
+out add - adds to a variable.
+out sub - subtracts from a variable.
+out mul - multiplies a variable.
+out div - divides variables.
+ln
+out --Data--
+out set - stores a variable.
+out context - sets the current context.
+ln
+out --Network--
+out ifnet - runs if network capabilites are avaliable.
+out ifup - checks if a domain is up.
+out storeget - performs a get request and stores the result.
+out outget - performs a get request and outputs the result.
+out storegets - performs a get request and stores the result.
+out outgets - performs a get request and outputs the result.

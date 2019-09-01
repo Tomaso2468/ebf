@@ -1,0 +1,188 @@
+ebf {
+	# Comments use hash tag
+	
+	# Unchangeable area.
+	final {
+		# File information
+		info {
+			author = Tomas O'Shea
+		}
+	
+		# Final variables
+		vars {
+			# Bot name.
+			botName = ExampleBot
+			
+			# Bot creation date. Unix time stamp in milliseconds.
+			botBirth = 1560871737000
+		}
+		
+		# Scripts to run in the background.
+		scripts {
+			# Loads a script from a file.
+			file {
+				exampleScript.ebs
+			}
+			
+			# Locally scored script
+			ebs {
+				#TODO: EBS Syntax
+			}
+		}
+		
+		# Scripts to run during initialisation.
+		onload {
+			# See scripts for syntax.
+		}
+	}
+	
+	# Default values for variables.
+	vars {
+		time = 0
+	}
+	
+	# Personality defaults.
+	emotions {
+		friendliness = 0.6
+		sarcasm = 0.1
+		boredom = 0
+		happy = 0.9
+		
+		# Fractions are allowed.
+		boredomFactor = 1 / 2048
+		friendlinessFactor = 1 /  4096
+		happinessFactor = 1 / 2048
+		
+		# Default thresholds
+		boredomT = 0.9
+		sarcasmT = 0.75
+		sadnessT = -0.1
+		friendT = 0.5
+		friendT2 = 0.75
+		friendT3 = 0.9
+		happyT = 0.95
+	}
+	
+	# Text input and output
+	text {
+		# Language specific
+		lang:en {
+			# Regions override languages.
+			io {
+				in {
+					Do you like tea?
+				}
+				out {
+					No.
+					No, I do not.
+					No, I don't.
+				}
+			}
+		
+			# Region specific
+			region:gb {
+				# Regions override languages
+				io {
+					in {
+						Do you like tea?
+					}
+					out {
+						Yes.
+						Yes!
+						Yes, I do.
+						Yes, I do!
+					}
+				}
+			}
+			
+			io {
+				# Possible input values.
+				in {
+					What is your name?
+					What's your name?
+					Name?
+					Who are you?
+				}
+				
+				# Randomly selected output.
+				out {
+					# If and else optional.
+					if %boredom% > %boredomT% {
+						Really...
+						...
+					} else {
+						My name is %botName%.
+						I am %botName%.
+						I'm %botName%.
+						
+						# Conditionals can be nested.
+						if %happy% > %happyT% {
+							My name is %botName%!
+							I am %botName%!
+							I'm %botName%!
+						}
+					}
+				}
+				
+				# Scripts ran after printing output.
+				scripts {
+					ebs {
+						add boredom %boredomFactor%
+						
+						if boredom > %boredomT% {
+							out I am bored.
+						}
+					}
+				}
+			}
+			
+			# Grouping can be used.
+			g:cmds {
+				io {
+					in {
+						!happy
+					}
+					
+					out {
+						# Can be ommited for no output.
+					}
+					
+					# So that a script can be used instead.
+					scripts {
+						ebs {
+							out Happiness status: %happy%
+						}
+					}
+				}
+				
+				io {
+					in {
+						!boredom
+					}
+					
+					# Variables can be used in both output and input.
+					out {
+						Boredom: %boredom% / %boredomT%
+					}
+				}
+				
+				io {
+					in {
+						!ebs help
+					}
+					
+					scripts {
+						file {
+							help.ebs
+						}
+					}
+				}
+			}
+		}
+		
+		post {
+			# Things to happen after an interaction.
+			
+		}
+	}
+}
