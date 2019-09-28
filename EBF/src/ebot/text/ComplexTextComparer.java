@@ -57,9 +57,10 @@ public class ComplexTextComparer implements TextComparer {
 		}
 
 		d /= Math.sqrt(calculate(a2, b2) + 1);
+		d /= Math.sqrt(calculate(a2, b2) + 1);
 		d /= Math.sqrt(calculate(a, b) + 1);
 
-		return d / c;
+		return (d / c);
 	}
 
 	protected static int calculate(String x, String y) {
