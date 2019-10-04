@@ -23,6 +23,9 @@ public class EBFIf extends EBFExpand {
 	@Override
 	public boolean evaluate(EBot bot, Context c) {
 		boolean b;
+		if (m == null) {
+			return false;
+		}
 		switch(m) {
 		case EQUAL:
 			b = Double.parseDouble(bot.get(var, c)) == Double.parseDouble(bot.get(var2, c));
