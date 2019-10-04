@@ -266,7 +266,7 @@ public class EBot {
 
 		String f_filter = filter;
 
-		final ExecutorService executor2 = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 2);
+		final ExecutorService executor2 = Executors.newFixedThreadPool(Math.min(2, Runtime.getRuntime().availableProcessors() / 2));
 
 		ThreadCounter tc = new ThreadCounter();
 
@@ -299,11 +299,11 @@ public class EBot {
 		}
 
 		List<Entry<EBFText, EBFIO>> entries = new ArrayList<>(ios.entrySet());
-		List<Entry<EBFText, EBFIO>> lmax = Collections.synchronizedList(new ArrayList<>(entries.size() / 1024));
+		List<Entry<EBFText, EBFIO>> lmax = Collections.synchronizedList(new ArrayList<>(entries.size() / 4999));
 
 		final String fin = in;
 
-		final ExecutorService executor = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors() - 2);
+		final ExecutorService executor = Executors.newWorkStealingPool(Math.min(2, Runtime.getRuntime().availableProcessors() / 2));
 
 		DoneCounter done = new DoneCounter();
 
