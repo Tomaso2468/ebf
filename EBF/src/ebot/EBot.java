@@ -36,7 +36,7 @@ public class EBot {
 	private final Map<String, NativeCall> calls = new HashMap<>();
 	private final List<InputFilter> filters = new ArrayList<>();
 	private final List<Replacer> replacers = new ArrayList<>();
-	
+
 	public EBot(EBFTree tree, TextComparer compare) {
 		super();
 		this.tree = tree;
@@ -46,25 +46,25 @@ public class EBot {
 	public void addListener(GetListener l) {
 		getListeners.add(l);
 	}
-	
+
 	public void removeListener(GetListener l) {
 		getListeners.remove(l);
 	}
-	
+
 	public String get(String var, Context c) {
 		for (GetListener getListener : getListeners) {
 			getListener.get(this, var);
 		}
 		return replaceVars("%" + var + "%", "null", c);
 	}
-	
+
 	public String getSafe(String var, Context c) {
 		for (GetListener getListener : getListeners) {
 			getListener.get(this, var);
 		}
 		return tree.get(var);
 	}
-	
+
 	public void load() {
 		for (EBSScript s : tree.loadScripts) {
 			s.run(this, new WorldInterface() {
@@ -76,14 +76,14 @@ public class EBot {
 
 				@Override
 				public void couldNotFind() {
-					
+
 				}
 
 				@Override
 				public void out(String s) {
 					System.out.println(s);
 				}
-			}, "null", new Context(){
+			}, "null", new Context() {
 
 				@Override
 				public int getCount(EBFIO io) {
@@ -92,7 +92,7 @@ public class EBot {
 
 				@Override
 				public void addCount(EBFIO io) {
-					
+
 				}
 
 				@Override
@@ -102,7 +102,7 @@ public class EBot {
 
 				@Override
 				public void setContext(String c) {
-					
+
 				}
 
 				@Override
@@ -117,17 +117,17 @@ public class EBot {
 
 				@Override
 				public void setInputProperty(String id, boolean v) {
-					
+
 				}
 
 				@Override
 				public void clearInputProperties() {
-					
+
 				}
 			});
 		}
 	}
-	
+
 	public void background(long gap) {
 		for (EBSScript s : tree.bgScripts) {
 			s.run(this, new WorldInterface() {
@@ -139,14 +139,14 @@ public class EBot {
 
 				@Override
 				public void couldNotFind() {
-					
+
 				}
 
 				@Override
 				public void out(String s) {
 					System.out.println(s);
 				}
-			}, "null", new Context(){
+			}, "null", new Context() {
 
 				@Override
 				public int getCount(EBFIO io) {
@@ -155,7 +155,7 @@ public class EBot {
 
 				@Override
 				public void addCount(EBFIO io) {
-					
+
 				}
 
 				@Override
@@ -165,7 +165,7 @@ public class EBot {
 
 				@Override
 				public void setContext(String c) {
-					
+
 				}
 
 				@Override
@@ -180,15 +180,15 @@ public class EBot {
 
 				@Override
 				public void setInputProperty(String id, boolean v) {
-					
+
 				}
 
 				@Override
 				public void clearInputProperties() {
-					
+
 				}
 			});
-			
+
 			try {
 				Thread.sleep(gap);
 			} catch (InterruptedException e) {
@@ -196,17 +196,17 @@ public class EBot {
 			}
 		}
 	}
-	
+
 	public void onConnect(WorldInterface wi, Context c) {
 		for (EBSScript s : tree.connectScripts) {
 			s.run(this, wi, "none", c);
 		}
 	}
-	
+
 	public void startBackground(long gap, long gap2) {
-		while(true) {
+		while (true) {
 			background(gap2);
-			
+
 			try {
 				Thread.sleep(gap);
 			} catch (InterruptedException e) {
@@ -214,55 +214,59 @@ public class EBot {
 			}
 		}
 	}
-	
+
 	private class DoneCounter {
 		private boolean done = false;
 	}
-	
+
 	private class ThreadCounter {
 		private long c = 0;
+
 		public synchronized void add() {
 			c += 1;
 		}
+
 		public synchronized void remove() {
 			c -= 1;
 		}
+
 		public synchronized long get() {
 			return c;
 		}
 	}
-	
+
 	public void doTask(String in, WorldInterface wi, Context c) {
 		for (EBSScript s : tree.preCall) {
 			s.run(this, wi, in, c);
 		}
-		
+
 		in = in.trim();
-		
+
 		c.clearInputProperties();
-		
+
 		for (Entry<String, TextFeatureDetector> e : detectors.entrySet()) {
 			c.setInputProperty(e.getKey(), e.getValue().hasFeature(in));
 		}
-		
+
 		Map<EBFText, EBFIO> ios = Collections.synchronizedMap(new HashMap<>(1024 * 2));
 		EBFIO max = null;
 		double maxScore = Double.NEGATIVE_INFINITY;
-		
+
 		String filter = null;
-		
+
 		for (InputFilter inputFilter : filters) {
 			if (inputFilter.check(in)) {
 				filter = inputFilter.getGroup();
+				inputFilter.onFilter(wi);
 			}
 		}
-		
+
 		String f_filter = filter;
-		
+
 		final ExecutorService executor2 = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 2);
-		
+
 		ThreadCounter tc = new ThreadCounter();
-		
+
 		tc.add();
 		executor2.execute(new Runnable() {
 			@Override
@@ -270,7 +274,7 @@ public class EBot {
 				expandInputs(ios, tree.root, wi.getLocale(), c, f_filter, executor2, tc);
 				if (f_filter != null && ios.size() == 0) {
 					expandInputs(ios, tree.root, wi.getLocale(), c, null, executor2, tc);
-					
+
 					if (ios.size() == 0) {
 						expandInputs(ios, tree.root, wi.getLocale(), c, "all", executor2, tc);
 					}
@@ -278,7 +282,7 @@ public class EBot {
 				tc.remove();
 			}
 		});
-		
+
 		while (tc.get() > 0) {
 			Thread.yield();
 		}
@@ -288,17 +292,17 @@ public class EBot {
 		} catch (InterruptedException e2) {
 			e2.printStackTrace();
 		}
-		
+
 		List<Entry<EBFText, EBFIO>> entries = new ArrayList<>(ios.entrySet());
 		List<Entry<EBFText, EBFIO>> lmax = Collections.synchronizedList(new ArrayList<>());
-		
+
 		final String fin = in;
-		
+
 		final ExecutorService executor = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors() - 2);
-		
+
 		DoneCounter done = new DoneCounter();
-		
-		for(int i = 0; i < entries.size(); i+=256) {
+
+		for (int i = 0; i < entries.size(); i += 256) {
 			int si = i;
 			int ei = Math.min(i + 256, entries.size());
 			executor.execute(new Runnable() {
@@ -307,34 +311,32 @@ public class EBot {
 				public void run() {
 					Entry<EBFText, EBFIO> max = null;
 					double maxScore = Double.NEGATIVE_INFINITY;
-					
+
 					for (int li = si; li < ei; li++) {
 						Entry<EBFText, EBFIO> e = entries.get(li);
 						e.getValue().check();
 						double score = compare.compare(replaceVars(e.getKey().getText(), fin, c), fin);
-						
-						System.out.println("Weighted " + e.getKey().getText() + " as " + score);
-						
+
 						if (score > maxScore && score > 0) {
 							max = e;
 							maxScore = score;
-							//Exit if sufficiently high.
+							// Exit if sufficiently high.
 							if (score > Double.MAX_VALUE / 16) {
 								done.done = true;
 								break;
 							}
 						}
 					}
-					
+
 					if (max != null) {
 						lmax.add(max);
 					}
 				}
 			});
 		}
-		
+
 		executor.shutdown();
-		
+
 		while (!done.done) {
 			try {
 				if (executor.awaitTermination(1, TimeUnit.SECONDS)) {
@@ -344,86 +346,86 @@ public class EBot {
 				e1.printStackTrace();
 			}
 		}
-		
+
 		executor.shutdownNow();
-		
+
 		try {
 			Thread.sleep(500);
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}
-		
+
 		for (Entry<EBFText, EBFIO> e : lmax) {
 			double score = compare.compare(replaceVars(e.getKey().getText(), fin, c), fin);
-			
+
 //			System.out.println("Weighted " + e.getKey().getText() + " as " + score);
-			
+
 			if (score > maxScore && score > 0) {
 				max = e.getValue();
 				maxScore = score;
-				//Exit if sufficiently high.
+				// Exit if sufficiently high.
 				if (score > Double.MAX_VALUE / 16) {
 					break;
 				}
 			}
 		}
-		
+
 		if (max == null) {
 			wi.couldNotFind();
 		} else {
 			c.addCount(max);
-			
+
 			List<EBFText> outs = new ArrayList<>();
-			
+
 			expandOutputs(outs, max, c.getCount(max), c);
-			
+
 			int i = new Random().nextInt(outs.size());
-			
+
 			wi.out(replaceVars(outs.get(i).getText(), in, c));
-			
+
 			c.setContext("none");
-			
+
 			for (EBSScript s : max.getScripts()) {
 				s.run(this, wi, in, c);
 			}
 		}
-		
+
 		for (EBSScript s : tree.postCall) {
 			s.run(this, wi, in, c);
 		}
-		
+
 		System.gc();
 	}
-	
+
 	public String replaceVars(String text, String in, Context c) {
 		return replaceVars(text, in, c, 3);
 	}
-	
+
 	public String replaceVars(String text, String in, Context c, int iterations) {
 		if (iterations == 0) {
 			return text;
 		}
-		
+
 		for (Replacer r : replacers) {
 			text = r.replace(text);
 		}
-		
+
 		text = text.replace("\\n", "\n");
-		
-		for(Entry<Object, Object> e : tree.variables.entrySet()) {
+
+		for (Entry<Object, Object> e : tree.variables.entrySet()) {
 			text = text.replace("%" + e.getKey() + "%", e.getValue() + "");
 		}
-		for(Entry<Object, Object> e : tree.finals.variables.entrySet()) {
+		for (Entry<Object, Object> e : tree.finals.variables.entrySet()) {
 			text = text.replace("%" + e.getKey() + "%", e.getValue() + "");
 		}
 		text = text.replace("%context%", c.getContext());
 		text = text.replace("%input%", in);
 		text = text.replace("%user%", c.getUser());
 		text = text.replace("%date%", new Date() + "");
-		for(Entry<String, Boolean> e : c.getInputProperties()) {
+		for (Entry<String, Boolean> e : c.getInputProperties()) {
 			text = text.replace("%d_" + e.getKey() + "%", e.getValue() + "");
 		}
-		
+
 		long age = System.currentTimeMillis() - Long.parseLong(getSafe("botBirth", c));
 		String ageString = "";
 		if (age < 1000) {
@@ -440,12 +442,12 @@ public class EBot {
 			ageString = age / 1000 / 60 / 60 / 24 / 365 + " years old";
 		}
 		text = text.replace("%age%", ageString);
-		
+
 		text = text.replace("%ramUsage%", Runtime.getRuntime().maxMemory() / 1024 / 1024 + "MB");
-		
+
 		return replaceVars(text, in, c, iterations - 1);
 	}
-	
+
 	protected void expandOutputs(List<EBFText> outs, EBFIO io, int count, Context c) {
 		if (count >= 3 && io.getOutputs3().length != 0) {
 			for (EBFText t : io.getOutputs3()) {
@@ -457,10 +459,10 @@ public class EBot {
 					outs.add(t);
 				}
 			}
-			
+
 			return;
 		}
-		
+
 		if (count >= 2 && io.getOutputs2().length != 0) {
 			for (EBFText t : io.getOutputs2()) {
 				if (t instanceof EBFExpand) {
@@ -471,10 +473,10 @@ public class EBot {
 					outs.add(t);
 				}
 			}
-			
+
 			return;
 		}
-		
+
 		for (EBFText t : io.getOutputs()) {
 			if (t instanceof EBFExpand) {
 				if (((EBFExpand) t).evaluate(this, c)) {
@@ -485,7 +487,7 @@ public class EBot {
 			}
 		}
 	}
-	
+
 	protected void expandOut(List<EBFText> outs, EBFExpand e, Context c) {
 		for (EBFText t : e.getTexts()) {
 			if (t instanceof EBFExpand) {
@@ -497,10 +499,12 @@ public class EBot {
 			}
 		}
 	}
-	
-	protected void expandInputs(Map<EBFText, EBFIO> map, EBFGroup g, Locale l, Context c, String filter, Executor executor, ThreadCounter tc) {
+
+	protected void expandInputs(Map<EBFText, EBFIO> map, EBFGroup g, Locale l, Context c, String filter,
+			Executor executor, ThreadCounter tc) {
 		tc.add();
-		if ((filter == null && !g.getName().startsWith("f:")) || (filter != null && filter.equals("all")) || g.getName().equals("f:" + filter)) {
+		if ((filter == null && !g.getName().startsWith("f:")) || (filter != null && filter.equals("all"))
+				|| g.getName().equals("f:" + filter)) {
 			for (EBFIO io : g.getIOs()) {
 				for (EBFText t : io.getInputs()) {
 					if (t instanceof EBFExpand) {
@@ -550,7 +554,7 @@ public class EBot {
 		}
 		tc.remove();
 	}
-	
+
 	protected void expandIn(Map<EBFText, EBFIO> map, EBFIO io, EBFExpand e, Locale l, Context c, Executor executor) {
 		for (EBFText t : e.getTexts()) {
 			if (t instanceof EBFExpand) {
@@ -567,7 +571,7 @@ public class EBot {
 			}
 		}
 	}
-	
+
 	public void callNative(String name, EBot bot, WorldInterface wi, String in, Context c, EBSScript s) {
 		calls.get(name).run(bot, wi, in, c, s);
 	}
@@ -579,19 +583,19 @@ public class EBot {
 	public TextFeatureDetector getTextProcessor(String id) {
 		return detectors.get(id);
 	}
-	
+
 	public void addTextProcessor(String id, TextFeatureDetector tfd) {
 		detectors.put(id, tfd);
 	}
-	
+
 	public void addNative(String id, NativeCall c) {
 		calls.put(id, c);
 	}
-	
+
 	public void addFilter(InputFilter f) {
 		filters.add(f);
 	}
-	
+
 	public void addReplacer(Replacer r) {
 		replacers.add(r);
 	}
