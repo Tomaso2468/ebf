@@ -236,6 +236,7 @@ public class EBot {
 	}
 
 	public void doTask(String in, WorldInterface wi, Context c) {
+		System.out.println("Running scripts");
 		for (EBSScript s : tree.preCall) {
 			s.run(this, wi, in, c);
 		}
@@ -244,16 +245,18 @@ public class EBot {
 
 		c.clearInputProperties();
 
+		System.out.println("Detecting features");
 		for (Entry<String, TextFeatureDetector> e : detectors.entrySet()) {
 			c.setInputProperty(e.getKey(), e.getValue().hasFeature(in));
 		}
 
-		Map<EBFText, EBFIO> ios = Collections.synchronizedMap(new HashMap<>(1024 * 2));
+		Map<EBFText, EBFIO> ios = Collections.synchronizedMap(new HashMap<>(1024 * 128));
 		EBFIO max = null;
 		double maxScore = Double.NEGATIVE_INFINITY;
 
 		String filter = null;
 
+		System.out.println("Loading input filters.");
 		for (InputFilter inputFilter : filters) {
 			if (inputFilter.check(in)) {
 				filter = inputFilter.getGroup();
@@ -267,6 +270,7 @@ public class EBot {
 
 		ThreadCounter tc = new ThreadCounter();
 
+		System.out.println("Expanding inputs.");
 		tc.add();
 		executor2.execute(new Runnable() {
 			@Override
@@ -286,6 +290,7 @@ public class EBot {
 		while (tc.get() > 0) {
 			Thread.yield();
 		}
+		System.out.println("Expanding inputs - done.");
 		executor2.shutdown();
 		try {
 			executor2.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
@@ -294,7 +299,7 @@ public class EBot {
 		}
 
 		List<Entry<EBFText, EBFIO>> entries = new ArrayList<>(ios.entrySet());
-		List<Entry<EBFText, EBFIO>> lmax = Collections.synchronizedList(new ArrayList<>());
+		List<Entry<EBFText, EBFIO>> lmax = Collections.synchronizedList(new ArrayList<>(entries.size() / 1024));
 
 		final String fin = in;
 
@@ -302,9 +307,11 @@ public class EBot {
 
 		DoneCounter done = new DoneCounter();
 
-		for (int i = 0; i < entries.size(); i += 256) {
+		System.out.println("Computing local minimums.");
+		for (int i = 0; i < entries.size(); i += 5000) {
 			int si = i;
-			int ei = Math.min(i + 256, entries.size());
+			int ei = Math.min(i + 5000, entries.size());
+			System.out.println("Starting: " + si + ".." + ei);
 			executor.execute(new Runnable() {
 
 				@Override
@@ -337,28 +344,34 @@ public class EBot {
 
 		executor.shutdown();
 
+		long time = 1;
 		while (!done.done) {
 			try {
 				if (executor.awaitTermination(1, TimeUnit.SECONDS)) {
 					done.done = true;
 				}
+				System.out.println("Taken " + time + " seconds");
 			} catch (InterruptedException e1) {
 				e1.printStackTrace();
 			}
+			time += 1;
 		}
 
 		executor.shutdownNow();
+		System.out.println("Done computing local max.");
 
 		try {
 			Thread.sleep(500);
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}
+		
+		System.out.println("Checking generated data.");
 
 		for (Entry<EBFText, EBFIO> e : lmax) {
 			double score = compare.compare(replaceVars(e.getKey().getText(), fin, c), fin);
 
-//			System.out.println("Weighted " + e.getKey().getText() + " as " + score);
+			System.out.println("Weighted " + e.getKey().getText() + " as " + score);
 
 			if (score > maxScore && score > 0) {
 				max = e.getValue();
@@ -370,6 +383,8 @@ public class EBot {
 			}
 		}
 
+		System.out.println("Doing output.");
+		
 		if (max == null) {
 			wi.couldNotFind();
 		} else {
@@ -389,7 +404,14 @@ public class EBot {
 				s.run(this, wi, in, c);
 			}
 		}
+		
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+		}
 
+		System.out.println("Final scripts.");
 		for (EBSScript s : tree.postCall) {
 			s.run(this, wi, in, c);
 		}
