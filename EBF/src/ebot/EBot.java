@@ -394,14 +394,18 @@ public class EBot {
 
 			expandOutputs(outs, max, c.getCount(max), c);
 
-			int i = new Random().nextInt(outs.size());
+			if (outs.size() > 0) {
+				int i = new Random().nextInt(outs.size());
 
-			wi.out(replaceVars(outs.get(i).getText(), in, c));
+				wi.out(replaceVars(outs.get(i).getText(), in, c));
 
-			c.setContext("none");
-
-			for (EBSScript s : max.getScripts()) {
-				s.run(this, wi, in, c);
+				c.setContext("none");
+				
+				for (EBSScript s : max.getScripts()) {
+					s.run(this, wi, in, c);
+				}
+			} else {
+				wi.couldNotFind();
 			}
 		}
 		
